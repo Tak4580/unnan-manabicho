@@ -29,13 +29,18 @@
         のように data.js より前で設定する（または data.js の DEFAULT_DATA_URL）。
    ========================================================= */
 
-// 同一スプレッドシートに紐づける場合は空のまま。別ファイルなら ID を入れる。
+// 同一スプレッドシートに紐づける場合は空のまま。別ファイル（スタンドアロン
+// プロジェクト）なら ID を入れるか、スクリプトプロパティ SPREADSHEET_ID に設定する。
 var SPREADSHEET_ID = "";
 
 function getBook_() {
-  return SPREADSHEET_ID
-    ? SpreadsheetApp.openById(SPREADSHEET_ID)
-    : SpreadsheetApp.getActiveSpreadsheet();
+  var id = SPREADSHEET_ID ||
+    PropertiesService.getScriptProperties().getProperty("SPREADSHEET_ID") || "";
+  var book = id ? SpreadsheetApp.openById(id) : SpreadsheetApp.getActiveSpreadsheet();
+  if (!book) {
+    throw new Error("スプレッドシートが見つかりません。プロジェクトの設定 > スクリプト プロパティで SPREADSHEET_ID に対象スプレッドシートのIDを設定してください。");
+  }
+  return book;
 }
 
 // --- Web アプリのエントリポイント -----------------------------------------
