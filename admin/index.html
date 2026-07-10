@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f2e9">
+  <title>管理画面ログイン｜うんなん暮らしの学び帖</title>
+  <meta name="description" content="うんなん暮らしの学び帖 管理画面ログイン">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --paper: #f7f2e9;
+      --paper-deep: #eee6d8;
+      --card: rgba(255, 255, 255, 0.78);
+      --ink: #27231f;
+      --sub: #6f6255;
+      --line: #d9cdbc;
+      --accent: #947b5c;
+      --accent-soft: #b5aa8a;
+      --shadow: 0 24px 60px rgba(74, 57, 38, 0.10);
+      --font-serif: "Shippori Mincho", "Yu Mincho", "Hiragino Mincho ProN", serif;
+      --font-sans: "Zen Kaku Gothic New", system-ui, -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+      margin: 0;
+    }
+
+    body {
+      color: var(--ink);
+      font-family: var(--font-sans);
+      background:
+        radial-gradient(circle at 20% 15%, rgba(255,255,255,.82), transparent 34%),
+        radial-gradient(circle at 78% 24%, rgba(255,255,255,.56), transparent 30%),
+        linear-gradient(180deg, #faf7f1 0%, var(--paper) 45%, #f4ede3 100%);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .26;
+      background-image:
+        repeating-linear-gradient(0deg, rgba(92,71,46,.025) 0, rgba(92,71,46,.025) 1px, transparent 1px, transparent 4px),
+        repeating-linear-gradient(90deg, rgba(92,71,46,.016) 0, rgba(92,71,46,.016) 1px, transparent 1px, transparent 5px);
+      mix-blend-mode: multiply;
+    }
+
+    .page {
+      position: relative;
+      min-height: 100svh;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      isolation: isolate;
+    }
+
+    .page-inner {
+      width: min(100%, 1180px);
+      margin: 0 auto;
+      padding: 54px 28px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-shell {
+      width: min(100%, 760px);
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .brand-mark {
+      width: 86px;
+      height: 72px;
+      margin: 0 auto 14px;
+      color: #8d765a;
+    }
+
+    .brand-mark svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .site-title {
+      margin: 0;
+      font-family: var(--font-serif);
+      font-size: clamp(34px, 4vw, 56px);
+      font-weight: 600;
+      letter-spacing: .075em;
+      line-height: 1.35;
+    }
+
+    .page-title {
+      margin: 18px 0 46px;
+      color: #6f604d;
+      font-family: var(--font-serif);
+      font-size: clamp(18px, 2vw, 25px);
+      font-weight: 500;
+      letter-spacing: .12em;
+    }
+
+    .login-card {
+      width: min(100%, 660px);
+      margin: 0 auto;
+      padding: 58px 54px 52px;
+      border: 1px solid rgba(183, 161, 132, .55);
+      border-radius: 22px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .login-card h2 {
+      margin: 0;
+      font-family: var(--font-serif);
+      font-size: clamp(28px, 3vw, 38px);
+      font-weight: 700;
+      letter-spacing: .05em;
+    }
+
+    .login-card .lead {
+      max-width: 480px;
+      margin: 22px auto 0;
+      color: #645c54;
+      font-size: 18px;
+      line-height: 1.95;
+    }
+
+    .divider {
+      height: 1px;
+      margin: 36px 0;
+      background: linear-gradient(90deg, transparent, #d7cbbb 12%, #d7cbbb 88%, transparent);
+    }
+
+    .google-button {
+      width: 100%;
+      min-height: 92px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      padding: 18px 28px;
+      border: 1.5px solid #8f8a82;
+      border-radius: 16px;
+      color: #211f1d;
+      background: rgba(255,255,255,.76);
+      font: inherit;
+      font-size: clamp(19px, 2vw, 25px);
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 8px 20px rgba(56, 43, 30, .03);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+    }
+
+    .google-button:hover {
+      transform: translateY(-2px);
+      border-color: #6f675f;
+      background: #fff;
+      box-shadow: 0 13px 26px rgba(56, 43, 30, .10);
+    }
+
+    .google-button:active {
+      transform: translateY(0);
+    }
+
+    .google-button:focus-visible {
+      outline: 3px solid rgba(148, 123, 92, .30);
+      outline-offset: 4px;
+    }
+
+    .google-logo {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 38px;
+    }
+
+    .security-note {
+      margin: 28px 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: #6a5f53;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .lock-icon {
+      width: 22px;
+      height: 22px;
+      color: #6f5f4b;
+      flex: 0 0 auto;
+    }
+
+    .decor {
+      position: fixed;
+      z-index: 0;
+      pointer-events: none;
+      color: #b8aa91;
+      opacity: .4;
+    }
+
+    .decor-leaves {
+      top: -18px;
+      right: -20px;
+      width: min(26vw, 370px);
+      transform: rotate(4deg);
+      opacity: .24;
+    }
+
+    .decor-vase {
+      left: -14px;
+      bottom: -26px;
+      width: min(34vw, 470px);
+      opacity: .42;
+    }
+
+    .desk-line {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 82px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(142,117,88,.11) 18%, rgba(142,117,88,.11) 82%, transparent);
+      z-index: 0;
+    }
+
+    footer {
+      position: relative;
+      z-index: 2;
+      padding: 22px 20px 28px;
+      color: #6f6256;
+      text-align: center;
+      font-size: 13px;
+      letter-spacing: .025em;
+    }
+
+    footer a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 700px) {
+      .page-inner {
+        padding: 34px 18px 22px;
+        align-items: start;
+      }
+
+      .brand-mark {
+        width: 66px;
+        height: 56px;
+        margin-bottom: 10px;
+      }
+
+      .site-title {
+        font-size: clamp(29px, 8vw, 42px);
+        letter-spacing: .045em;
+      }
+
+      .page-title {
+        margin: 12px 0 28px;
+        font-size: 17px;
+      }
+
+      .login-card {
+        padding: 38px 22px 32px;
+        border-radius: 18px;
+      }
+
+      .login-card h2 {
+        font-size: 27px;
+      }
+
+      .login-card .lead {
+        margin-top: 16px;
+        font-size: 15px;
+        line-height: 1.85;
+      }
+
+      .divider {
+        margin: 26px 0;
+      }
+
+      .google-button {
+        min-height: 74px;
+        gap: 18px;
+        padding-inline: 18px;
+        font-size: 19px;
+      }
+
+      .google-logo {
+        width: 32px;
+        height: 32px;
+        flex-basis: 32px;
+      }
+
+      .security-note {
+        align-items: flex-start;
+        font-size: 12px;
+      }
+
+      .decor-leaves {
+        width: 180px;
+      }
+
+      .decor-vase {
+        width: 220px;
+        left: -65px;
+        opacity: .23;
+      }
+
+      footer {
+        font-size: 11px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .001ms !important;
+        animation-duration: .001ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <svg class="decor decor-leaves" viewBox="0 0 340 280" aria-hidden="true">
+      <g fill="none" stroke="currentColor" stroke-width="1.15" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M320 8C281 55 250 112 234 172c-11 42-9 76-6 98"/>
+        <path d="M297 38c-25 5-43 18-54 39 28 0 47-11 58-34"/>
+        <path d="M279 70c-25 4-45 18-56 41 29 0 50-13 61-37"/>
+        <path d="M259 107c-23 5-40 20-50 42 27-1 45-14 55-38"/>
+        <path d="M245 145c-22 3-40 16-51 37 27 1 45-10 56-32"/>
+        <path d="M290 43c10 23 9 44-3 64-14-25-12-47 3-64"/>
+        <path d="M270 82c11 24 11 46-1 65-14-24-14-46 1-65"/>
+        <path d="M252 122c11 22 11 42 1 60-14-22-14-42-1-60"/>
+      </g>
+      <g fill="currentColor" opacity=".18">
+        <ellipse cx="267" cy="67" rx="24" ry="10" transform="rotate(-28 267 67)"/>
+        <ellipse cx="251" cy="105" rx="24" ry="10" transform="rotate(-28 251 105)"/>
+        <ellipse cx="236" cy="143" rx="22" ry="9" transform="rotate(-26 236 143)"/>
+        <ellipse cx="291" cy="77" rx="10" ry="24" transform="rotate(12 291 77)"/>
+        <ellipse cx="271" cy="118" rx="10" ry="24" transform="rotate(10 271 118)"/>
+      </g>
+    </svg>
+
+    <svg class="decor decor-vase" viewBox="0 0 520 470" aria-hidden="true">
+      <g fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M89 214c21-8 52-9 76 0 6 18 11 40 12 68 2 73-8 126-27 162H70c-19-36-29-89-27-162 1-28 6-50 12-68 9-4 22-7 34-7Z"/>
+        <ellipse cx="110" cy="215" rx="56" ry="13"/>
+        <ellipse cx="110" cy="219" rx="43" ry="8"/>
+        <path d="M110 211C102 143 92 100 61 49"/>
+        <path d="M111 208c9-60 35-113 79-158"/>
+        <path d="M110 207c-1-70 8-126 27-173"/>
+        <path d="M111 208c-23-47-52-84-89-114"/>
+        <path d="M66 58c-11-4-20-12-26-24 15 1 26 7 34 19"/>
+        <path d="M86 96c-13-3-24-10-32-22 16-1 29 5 38 17"/>
+        <path d="M137 57c10-9 21-13 35-12-7 13-18 21-32 24"/>
+        <path d="M157 86c12-8 25-11 39-7-9 13-21 19-36 19"/>
+        <path d="M31 106c-11-2-20-8-28-18 14-2 25 2 34 12"/>
+        <path d="M115 126c8-7 17-10 28-8-6 10-15 15-26 16"/>
+        <path d="M88 142c-8-4-14-10-18-20 12 2 20 8 25 18"/>
+        <path d="M62 63c3-10 9-17 18-23 1 12-3 21-12 28"/>
+        <path d="M186 55c-2-10 0-19 7-27 5 11 4 21-2 30"/>
+        <path d="M136 36c-5-9-5-18-1-28 8 9 10 19 6 29"/>
+      </g>
+      <g fill="currentColor" opacity=".13">
+        <circle cx="61" cy="54" r="4"/><circle cx="88" cy="93" r="4"/><circle cx="138" cy="55" r="4"/><circle cx="160" cy="86" r="4"/><circle cx="31" cy="104" r="4"/>
+        <circle cx="117" cy="126" r="4"/><circle cx="90" cy="141" r="4"/><circle cx="79" cy="42" r="4"/><circle cx="194" cy="31" r="4"/><circle cx="135" cy="12" r="4"/>
+      </g>
+      <path d="M56 235c33-11 78-11 110 0v39c-28 10-79 10-110 0Z" fill="currentColor" opacity=".06"/>
+      <path d="M0 443h520" stroke="currentColor" stroke-width="1" opacity=".24"/>
+      <path d="M158 400h214l70 43H90Z" fill="currentColor" opacity=".06"/>
+      <path d="M175 383h171l26 17H158Z" fill="currentColor" opacity=".07"/>
+      <path d="M239 389h98" stroke="currentColor" stroke-width="4" opacity=".22"/>
+      <path d="M320 391l43 7" stroke="currentColor" stroke-width="5" opacity=".22"/>
+    </svg>
+
+    <div class="desk-line" aria-hidden="true"></div>
+
+    <main class="page-inner">
+      <section class="login-shell" aria-labelledby="siteTitle">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 96 76" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 18c11-6 22-7 34 0v42c-12-6-23-5-34 0Z"/>
+            <path d="M50 18c11-6 22-7 34 0v42c-12-6-23-5-34 0Z"/>
+            <path d="M50 18v42"/>
+            <path d="M60 44c2-15 10-23 21-25-1 13-8 22-21 25Z"/>
+            <path d="M60 44c8-8 14-13 21-18"/>
+            <path d="M81 54c7 0 12 3 15 9-8 1-14-2-18-8"/>
+          </svg>
+        </div>
+
+        <h1 id="siteTitle" class="site-title">うんなん暮らしの学び帖</h1>
+        <p class="page-title">管理画面ログイン</p>
+
+        <div class="login-card">
+          <h2>管理者ログイン</h2>
+          <p class="lead">記事や講座の管理、サイト設定を行うには<br>ログインしてください。</p>
+
+          <div class="divider" aria-hidden="true"></div>
+
+          <a
+            class="google-button"
+            href="https://script.google.com/macros/s/AKfycbxZEEvksixS8xklUtyS_fDxWKcx1d3PiPi5V_Q2ZmaTd5LJstj5aO5PQ-mnYY1RzyEe/exec?page=admin"
+            aria-label="Googleで管理画面にログイン"
+          >
+            <svg class="google-logo" viewBox="0 0 48 48" aria-hidden="true">
+              <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5Z"/>
+              <path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 18.9 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4c-7.7 0-14.3 4.3-17.7 10.7Z"/>
+              <path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.6-5.2l-6.3-5.3A12 12 0 0 1 12.9 28.4l-6.6 5.1C9.7 39.7 16.3 44 24 44Z"/>
+              <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3a12 12 0 0 1-4 5.5l6.3 5.3C37.2 39.2 44 34 44 24c0-1.2-.1-2.4-.4-3.5Z"/>
+            </svg>
+            <span>Googleでログイン</span>
+          </a>
+
+          <p class="security-note">
+            <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="5" y="10" width="14" height="10" rx="2"/>
+              <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+            </svg>
+            <span>このサイトはGoogleアカウントで安全に認証されます。</span>
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      © 2026 JAしまね雲南地区本部&nbsp; うんなん暮らしの学び帖
+    </footer>
+  </div>
+</body>
+</html>

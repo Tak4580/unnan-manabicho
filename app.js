@@ -587,7 +587,7 @@ function adminPage() {
           <h1>記事の登録・編集はGAS管理画面で行います。</h1>
           <p class="lead">この公開ページ内の <code>#admin</code> は案内用です。読み込み中のまま止まる場合は、GASウェブアプリの管理画面URLを直接開いてください。</p>
           <div class="hero-actions">
-            ${url ? `<a class="primary-button nav-external" href="${safeUrl(url)}" target="_blank" rel="noopener noreferrer">GAS管理画面を開く</a>` : ""}
+            ${url ? `<a class="primary-button nav-external" href="${safeUrl(url)}" target="_blank" rel="noopener noreferrer">管理画面を開く</a>` : ""}
             <a class="button-quiet" href="#home" data-route="home">公開サイトへ戻る</a>
           </div>
         </div>
