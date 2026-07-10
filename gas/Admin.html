@@ -62,6 +62,9 @@
     .sec-title{font-family:var(--serif);font-size:13px;color:var(--brown);letter-spacing:.06em;
       margin:20px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--line)}
     .hint{font-size:11px;color:var(--muted)}
+    .aside-sep{border-top:1px solid var(--line);margin:14px -16px 12px}
+    .list-title{font-family:var(--serif);font-size:14px;font-weight:600;margin:0 0 10px;letter-spacing:.02em}
+    .editor-title{font-family:var(--serif);font-size:16px;font-weight:600;margin:0 0 12px;letter-spacing:.02em}
     .checks{background:var(--paper-soft);border:1px solid var(--line);border-radius:8px;padding:10px;margin:16px 0}
     .checks label{display:block;font-size:13px;margin-bottom:4px;cursor:pointer}
     .checks .hint{margin:4px 0 0}
@@ -131,7 +134,9 @@
   <!-- ===== 記事 ===== -->
   <div id="view-articles" class="wrap" style="display:none">
     <aside class="card">
-      <button class="btn brown" id="newBtn" style="width:100%;margin-bottom:12px">＋ 新規作成</button>
+      <button class="btn brown" id="newBtn" style="width:100%">＋ 新規作成</button>
+      <div class="aside-sep"></div>
+      <div class="list-title">記事一覧</div>
       <div class="filters">
         <div class="chips" id="statusChips">
           <button class="chip active" data-status="">すべて</button>
@@ -149,7 +154,8 @@
       <div id="list"></div>
     </aside>
 
-    <main class="card">
+    <main class="card" id="editorPane" hidden>
+      <h2 class="editor-title" id="editorTitle">新規作成</h2>
       <div id="msg" class="msg"></div>
 
       <div class="grid2">
@@ -418,6 +424,15 @@
       $("unpublishBtn").hidden = !(editingId && editingStatus === "published");
     }
 
+    // 右カラム（入力フォーム）は初期非表示。新規作成か記事クリックで開く。
+    function openEditor(title){
+      $("editorTitle").textContent = title;
+      $("editorPane").hidden = false;
+    }
+    function closeEditor(){
+      $("editorPane").hidden = true;
+    }
+
     function clearForm(){
       editingId = ""; editingStatus = "";
       ARTICLE_FIELDS.forEach(function(id){ setVal(id,""); });
@@ -443,6 +458,7 @@
             ? "既存画像を使用中（アップロードで差し替え可）" : "";
         showPhotoPreview(r.main_image_file_id);
         $("statusLabel").textContent = "編集中：" + statusJa(editingStatus);
+        openEditor("記事編集");
         updateTypeFields(); updatePublishGate(); updateEditButtons(); renderList();
         window.scrollTo(0,0);
       }).catch(function(e){ showMsg(e.message, "err"); });
@@ -485,7 +501,7 @@
       if(!confirm("この記事を削除します。元に戻せません。よろしいですか？")) return;
       gasRun("deleteArticle", editingId).then(function(){
         showMsg("削除しました。", "ok");
-        reloadList().then(clearForm);
+        reloadList().then(function(){ clearForm(); closeEditor(); });
       }).catch(function(e){ showMsg(e.message, "err"); });
     }
 
@@ -495,6 +511,7 @@
       setVal("title", val("title") ? val("title") + "（コピー）" : "");
       CHECK_FIELDS.forEach(function(id){ $(id).checked = false; });
       $("statusLabel").textContent = "新規（複製）";
+      $("editorTitle").textContent = "新規作成";
       updatePublishGate(); updateEditButtons(); renderList();
       showMsg("複製しました。「下書き保存」すると新しい記事として保存されます。", "ok");
       window.scrollTo(0,0);
@@ -797,7 +814,7 @@
       document.querySelectorAll(".pc").forEach(function(c){ c.addEventListener("change", updatePublishGate); });
       $("photoInput").addEventListener("change", onPhotoSelected);
       $("image_path").addEventListener("input", updatePublishGate);
-      $("newBtn").addEventListener("click", clearForm);
+      $("newBtn").addEventListener("click", function(){ clearForm(); openEditor("新規作成"); });
       $("draftBtn").addEventListener("click", function(){ save("draft"); });
       $("publishBtn").addEventListener("click", function(){ save("publish"); });
       $("previewBtn").addEventListener("click", openPreview);
