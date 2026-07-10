@@ -205,9 +205,9 @@
         <span class="hint" id="photoStatus"></span>
         <div id="photoPreview"></div>
         <input type="hidden" id="main_image_file_id">
+        <!-- 画像パスは編集不要になったため非表示。既存記事の値は保持して送り返す。 -->
+        <input type="hidden" id="image_path">
       </div>
-      <label class="field"><span>画像パス（任意・Drive未使用時のフォールバック）</span>
-        <input id="image_path" placeholder="例：assets/images/karin.png"></label>
 
       <div class="checks">
         <strong style="font-size:13px">公開前チェック</strong>
@@ -437,7 +437,10 @@
         setVal("course_id", r.course_id || (courses[0] && courses[0].course_id));
         ARTICLE_FIELDS.forEach(function(k){ setVal(k, r[k]); });
         CHECK_FIELDS.forEach(function(k){ $(k).checked = String(r[k]).toUpperCase() === "TRUE"; });
-        $("photoInput").value = ""; $("photoStatus").textContent = "";
+        $("photoInput").value = "";
+        $("photoStatus").textContent =
+          (!r.main_image_file_id && String(r.image_path || "").trim())
+            ? "既存画像を使用中（アップロードで差し替え可）" : "";
         showPhotoPreview(r.main_image_file_id);
         $("statusLabel").textContent = "編集中：" + statusJa(editingStatus);
         updateTypeFields(); updatePublishGate(); updateEditButtons(); renderList();
