@@ -62,7 +62,6 @@
     .sec-title{font-family:var(--serif);font-size:13px;color:var(--brown);letter-spacing:.06em;
       margin:20px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--line)}
     .hint{font-size:11px;color:var(--muted)}
-    .aside-sep{border-top:1px solid var(--line);margin:14px -16px 12px}
     .list-title{font-family:var(--serif);font-size:14px;font-weight:600;margin:0 0 10px;letter-spacing:.02em}
     .editor-title{font-family:var(--serif);font-size:16px;font-weight:600;margin:0 0 12px;letter-spacing:.02em}
     .checks{background:var(--paper-soft);border:1px solid var(--line);border-radius:8px;padding:10px;margin:16px 0}
@@ -133,9 +132,11 @@
 
   <!-- ===== 記事 ===== -->
   <div id="view-articles" class="wrap" style="display:none">
-    <aside class="card">
-      <button class="btn brown" id="newBtn" style="width:100%">＋ 新規作成</button>
-      <div class="aside-sep"></div>
+    <aside>
+      <div class="card" style="margin-bottom:16px">
+        <button class="btn brown" id="newBtn" style="width:100%">＋ 新規作成</button>
+      </div>
+      <div class="card">
       <div class="list-title">記事一覧</div>
       <div class="filters">
         <div class="chips" id="statusChips">
@@ -152,6 +153,7 @@
         <input type="search" id="filterQ" placeholder="タイトルで検索">
       </div>
       <div id="list"></div>
+      </div>
     </aside>
 
     <main class="card" id="editorPane" hidden>
