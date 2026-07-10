@@ -388,8 +388,12 @@
         b.className = "list-item" + (a.article_id === editingId ? " selected" : "");
         var cls = a.status === "published" ? "published" : "draft";
         var label = { published:"公開", draft:"下書き", scheduled:"予約" }[a.status] || a.status || "下書き";
+        var course = courses.filter(function(c){ return c.course_id === a.course_id; })[0];
+        var courseHtml = course
+          ? '｜<span class="swatch-dot" style="background:'+escapeAttr(course.accent_color||"#ccc")+'"></span>'+escapeHtml(course.course_name || "")
+          : "";
         b.innerHTML = '<span class="badge '+cls+'">'+escapeHtml(label)+'</span> '+ escapeHtml(a.title || "(無題)") +
-          '<div class="meta">'+ escapeHtml(a.event_date || "") +'｜'+ escapeHtml(TYPE_LABELS[a.post_type] || a.post_type || "") +'</div>';
+          '<div class="meta">'+ escapeHtml(a.event_date || "") +'｜'+ escapeHtml(TYPE_LABELS[a.post_type] || a.post_type || "") + courseHtml +'</div>';
         b.onclick = function(){ loadArticle(a.article_id); };
         box.appendChild(b);
       });
