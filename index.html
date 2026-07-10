@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>うんなん暮らしの学び帖｜JAしまね雲南地区本部</title>
+  <meta name="description" content="料理教室、JA女性大学、親子体験、赤ちゃん食堂など。雲南の暮らしに寄り添う小さな活動を、写真とことばで記録しています。">
+  <meta name="theme-color" content="#fbf7ef">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="うんなん暮らしの学び帖">
+  <meta property="og:description" content="食べて、つくって、話して。雲南の暮らしに寄り添う講座と活動の記録。">
+  <meta property="og:site_name" content="うんなん暮らしの学び帖">
+  <meta property="og:image" content="assets/images/symbol_ja.png">
+  <meta name="format-detection" content="telephone=no">
+
+  <link rel="icon" href="assets/images/symbol_ja.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/images/symbol_ja.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css?v=20260709-photo-quality-ui">
+
+  <style>
+    /* =========================================================
+       Design refresh — 2026-07-09
+       既存 style.css / app.js を壊さず index.html 側だけで上書きする
+       デザインパッチ。index.html を差し替えるだけで反映されます。
+       ・和文Webフォント（明朝＝Shippori Mincho / ゴシック＝Zen Kaku）
+       ・"帖(notebook)" を意識した紙とJAグリーンの綴じ差し色
+       ・ボタン/カード/一覧の手触りを微調整
+       ・フッター再構成・スキップリンク・focus / reduced-motion 対応
+       ========================================================= */
+
+    :root {
+      --font-sans: "Zen Kaku Gothic New", system-ui, -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+      --font-serif: "Shippori Mincho", "Yu Mincho", "Hiragino Mincho ProN", "Noto Serif JP", serif;
+      --shadow-soft: 0 6px 20px rgba(70, 50, 30, 0.05);
+      --shadow-panel: 0 18px 48px rgba(70, 50, 30, 0.07);
+    }
+
+    body {
+      font-feature-settings: "palt" 1;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection {
+      background: rgba(0, 122, 77, 0.14);
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--warm-brown);
+      outline-offset: 3px;
+      border-radius: 3px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.001ms !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    /* --- スキップリンク（キーボード操作時のみ表示） --- */
+    .skip-link {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 300;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      background: var(--ja-green);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      opacity: 0;
+      transform: translateY(-64px);
+      transition: transform 160ms ease, opacity 160ms ease;
+    }
+    .skip-link:focus-visible {
+      opacity: 1;
+      transform: none;
+      outline-color: #fff;
+    }
+
+    /* --- ヘッダー：帳面の綴じ紐のようなJAグリーンの差し色 --- */
+    .site-header {
+      border-top: 3px solid var(--ja-green);
+    }
+    .brand strong {
+      font-family: var(--font-serif);
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+    .brand small {
+      letter-spacing: 0.04em;
+    }
+    .desktop-nav a {
+      letter-spacing: 0.02em;
+    }
+    /* アクティブ/ホバーの下線をやや太く、JAグリーン寄りに */
+    .desktop-nav a.is-active,
+    .desktop-nav a:hover {
+      color: var(--ja-green);
+    }
+    .desktop-nav a.is-active::after,
+    .desktop-nav a:hover::after {
+      opacity: 0.55;
+    }
+
+    /* --- ボタンの手触りを少しやわらかく --- */
+    .primary-button {
+      box-shadow: 0 4px 14px rgba(155, 106, 71, 0.22);
+      transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+    }
+    .primary-button:hover {
+      background: color-mix(in srgb, var(--warm-brown), #000 6%);
+      box-shadow: 0 7px 20px rgba(155, 106, 71, 0.28);
+      transform: translateY(-1px);
+    }
+    .outline-button,
+    .button-quiet,
+    .ghost-button {
+      transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
+    }
+    .button-quiet:hover,
+    .outline-button:hover {
+      border-color: var(--warm-brown);
+    }
+
+    /* --- 見出しの明朝を少し引き締める --- */
+    .section-title,
+    .feature-report__caption h2,
+    .course-row h3,
+    .news-item h3,
+    .info-box h2,
+    .voice-box h2 {
+      letter-spacing: 0.03em;
+    }
+
+    /* --- 最新レポートのキャプションカードに奥行き --- */
+    .feature-report__caption {
+      box-shadow: var(--shadow-panel);
+    }
+
+    /* --- 一覧行：ホバー時にほんの少し前へ出る手触り --- */
+    .news-item,
+    .course-row {
+      border-radius: var(--radius-sm);
+      transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+    }
+    .news-item:hover,
+    .course-row:hover {
+      transform: translateX(2px);
+    }
+    .news-item__image img,
+    .feature-report__image img,
+    .course-door__photo img,
+    .article-main-image img {
+      transition: transform 320ms ease, filter 320ms ease;
+    }
+    .news-item:hover .news-item__image img,
+    .feature-report:hover .feature-report__image img {
+      transform: scale(1.03);
+      filter: saturate(0.98) contrast(0.98);
+    }
+
+    /* --- 講座アイコンの円に、講座色のやわらかな塗り --- */
+    .course-row__icon {
+      background: color-mix(in srgb, var(--course-soft), transparent 24%);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--course-color), transparent 82%);
+    }
+
+    /* --- 季節ノートのアイコンを講座色でなく季節の茶に統一（既存踏襲）--- */
+    .season-note h3 {
+      letter-spacing: 0.02em;
+    }
+
+    /* --- モバイルメニュー末尾のひとこと --- */
+    .menu-foot {
+      margin: 24px 0 0;
+      color: var(--muted);
+      font-family: var(--font-serif);
+      font-size: 14px;
+      line-height: 2.1;
+    }
+
+    .noscript-note {
+      width: min(var(--content), calc(100% - 48px));
+      margin: 56px auto;
+      color: var(--text-soft);
+    }
+
+    /* --- フッター再構成（2段組＋下段のクレジット帯） --- */
+    .site-footer .footer-inner {
+      align-items: start;
+      padding: 44px 0 32px;
+    }
+    .footer-brand {
+      max-width: 540px;
+    }
+    .footer-title {
+      margin: 0;
+      color: var(--ink);
+      font-family: var(--font-serif);
+      font-size: 19px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+    .footer-org {
+      margin: 3px 0 14px;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+    .footer-note {
+      margin: 0;
+      font-size: 13px;
+      line-height: 2.1;
+    }
+    .footer-links {
+      display: grid;
+      gap: 2px;
+      align-content: start;
+      justify-items: start;
+    }
+    .footer-links a {
+      min-height: 38px;
+      color: var(--text-soft);
+    }
+    .footer-links a:hover {
+      color: var(--warm-brown);
+    }
+    .footer-bottom {
+      border-top: 1px solid var(--line);
+      background: rgba(248, 241, 231, 0.5);
+    }
+    .footer-bottom-inner {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 18px;
+      justify-content: space-between;
+      width: min(var(--wide), calc(100% - 40px));
+      margin: 0 auto;
+      padding: 13px 0;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.03em;
+    }
+
+    @media (max-width: 800px) {
+      .footer-bottom-inner {
+        width: min(100% - 24px, var(--wide));
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#app">本文へ移動する</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#home" data-route="home" aria-label="ホームへ">
+        <span class="ja-mark" aria-hidden="true">
+          <img src="assets/images/symbol_ja.png" alt="">
+        </span>
+        <span>
+          <small>JAしまね雲南地区本部</small>
+          <strong>うんなん暮らしの学び帖</strong>
+        </span>
+      </a>
+
+      <nav class="desktop-nav" aria-label="主要ナビゲーション">
+        <a href="#home" data-route="home">ホーム</a>
+        <a href="#reports" data-route="reports">活動レポート</a>
+        <a href="#courses" data-route="courses">講座一覧</a>
+        <a class="nav-external" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a>
+        <a href="#contact" data-route="contact">お問い合わせ</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="menu-button" type="button" aria-label="メニューを開く" aria-expanded="false" aria-controls="mobileMenu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="mobile-menu" id="mobileMenu" hidden>
+    <a href="#home" data-route="home">ホーム</a>
+    <a href="#reports" data-route="reports">活動レポート</a>
+    <a href="#courses" data-route="courses">講座一覧</a>
+    <a class="nav-external" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Instagram<span class="external-mark" aria-hidden="true">↗</span></a>
+    <a href="#contact" data-route="contact">お問い合わせ</a>
+    <p class="menu-foot">食べて、つくって、話して。<br>暮らしを少し楽しく。</p>
+  </div>
+
+  <div class="page-loading" id="pageLoading" hidden aria-live="polite">読み込み中</div>
+
+  <main id="app" tabindex="-1">
+    <noscript>
+      <p class="noscript-note">このサイトの表示にはJavaScriptが必要です。ブラウザの設定をご確認ください。</p>
+    </noscript>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img class="footer-ja-mark" src="assets/images/symbol_ja.png" alt="" aria-hidden="true">
+        <p class="footer-title">うんなん暮らしの学び帖</p>
+        <p class="footer-org">JAしまね雲南地区本部</p>
+        <p class="footer-note">食べること、つくること、話すこと。<br>雲南の暮らしに寄り添う小さな活動を、これからも少しずつ記録していきます。</p>
+      </div>
+      <nav class="footer-links" aria-label="フッターナビゲーション">
+        <a href="#reports" data-route="reports">活動レポート</a>
+        <a href="#courses" data-route="courses">講座一覧</a>
+        <a class="nav-external" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a>
+        <a href="#contact" data-route="contact">お問い合わせ</a>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-bottom-inner">
+        <small>&copy; JAしまね雲南地区本部</small>
+        <small>JAでひらく、講座と活動の記録。</small>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 公開データの取得先（GAS ウェブアプリ / gas/Code.gs）。
+       このURLを外す・空にすると data.js 同梱のサンプルデータで表示します。 -->
+  <script>
+    window.LEARNING_DATA_URL = "https://script.google.com/macros/s/AKfycbzBBz-yblFop0MwRkPhVc04i-c4s7ERwGhSbIxobxYdKeJ8aN7dman0VWMcrBsDC6qzqA/exec";
+    window.LEARNING_ADMIN_URL = window.LEARNING_DATA_URL + "?page=admin";
+  </script>
+  <script src="data.js?v=20260710-admin-fallback"></script>
+  <script src="app.js?v=20260710-admin-fallback"></script>
+</body>
+</html>

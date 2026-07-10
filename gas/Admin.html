@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <style>
+    :root{
+      --bg:#fbf7ef; --paper:#fffdf8; --paper-soft:#f8f1e7; --ink:#2d2924;
+      --text-soft:#5e554d; --muted:#8a7f73; --line:#e5dccb; --line-strong:#d9cdb6;
+      --brown:#9b6a47; --green:#007a4d; --red:#9a3b2b;
+      --serif:"Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;
+      --sans:system-ui,-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.7}
+
+    /* ヘッダー */
+    .bar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+      padding:10px 18px;background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+    .bar h1{font-family:var(--serif);font-size:17px;font-weight:600;margin:0;letter-spacing:.02em}
+    .bar h1 small{font-family:var(--sans);font-size:11px;color:var(--muted);font-weight:500;margin-left:8px}
+    .bar .who{font-size:12px;color:var(--muted)}
+    .tabs{display:flex;gap:2px}
+    .tab{font:inherit;font-size:13px;font-weight:600;color:var(--text-soft);background:none;border:0;
+      border-bottom:2px solid transparent;padding:8px 12px;cursor:pointer}
+    .tab:hover{color:var(--brown)}
+    .tab.active{color:var(--brown);border-bottom-color:var(--brown)}
+
+    .wrap{display:grid;grid-template-columns:320px minmax(0,1fr);gap:16px;padding:16px;max-width:1160px;margin:0 auto}
+    @media(max-width:840px){.wrap{grid-template-columns:1fr}}
+    .wrap.single{grid-template-columns:minmax(0,720px);justify-content:center}
+    .card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px}
+
+    /* 一覧 */
+    .filters{margin-bottom:12px}
+    .chips{display:flex;gap:6px;margin-bottom:8px}
+    .chip{font:inherit;font-size:12px;padding:3px 12px;border-radius:999px;border:1px solid var(--line);
+      background:var(--paper);color:var(--text-soft);cursor:pointer}
+    .chip.active{background:var(--brown);border-color:var(--brown);color:#fff}
+    .filters select,.filters input[type="search"]{margin-bottom:6px}
+    .list-item{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--paper);
+      border-radius:8px;padding:8px 10px;margin-bottom:8px;cursor:pointer;font:inherit;color:inherit}
+    .list-item:hover{border-color:var(--brown)}
+    .list-item.selected{border-color:var(--brown);background:var(--paper-soft)}
+    .list-item .meta{font-size:11px;color:var(--muted)}
+    .badge{display:inline-block;font-size:10px;padding:1px 7px;border-radius:999px;border:1px solid var(--line)}
+    .badge.published{background:#e7f3ec;color:var(--green);border-color:#bfe0cd}
+    .badge.draft{background:#f4eee3;color:var(--brown)}
+    .swatch-dot{display:inline-block;width:10px;height:10px;border-radius:999px;margin-right:6px;vertical-align:baseline}
+
+    /* フォーム */
+    label.field{display:block;margin-bottom:10px}
+    label.field > span{display:block;font-size:12px;color:var(--text-soft);margin-bottom:3px}
+    input,select,textarea{width:100%;font:inherit;padding:8px 10px;border:1px solid var(--line);
+      border-radius:8px;background:#fff;color:var(--ink)}
+    input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brown)}
+    input[disabled]{background:var(--paper-soft);color:var(--muted)}
+    textarea{min-height:76px;resize:vertical}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    @media(max-width:520px){.grid2,.grid3{grid-template-columns:1fr}}
+    .sec-title{font-family:var(--serif);font-size:13px;color:var(--brown);letter-spacing:.06em;
+      margin:20px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+    .hint{font-size:11px;color:var(--muted)}
+    .checks{background:var(--paper-soft);border:1px solid var(--line);border-radius:8px;padding:10px;margin:16px 0}
+    .checks label{display:block;font-size:13px;margin-bottom:4px;cursor:pointer}
+    .checks .hint{margin:4px 0 0}
+    .color-field{display:flex;gap:6px;align-items:center}
+    .color-field input[type="color"]{width:38px;height:34px;padding:2px;flex:none;cursor:pointer}
+
+    /* ボタン */
+    .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px}
+    .actions .spacer{flex:1}
+    button.btn{font:inherit;font-size:13px;font-weight:600;padding:9px 16px;border-radius:8px;
+      border:1px solid var(--line-strong);background:var(--paper);color:var(--brown);cursor:pointer}
+    button.btn:hover{background:rgba(155,106,71,.06)}
+    button.btn.primary{background:var(--green);border-color:var(--green);color:#fff}
+    button.btn.primary:hover{background:#006c45}
+    button.btn.brown{background:var(--brown);border-color:var(--brown);color:#fff}
+    button.btn.brown:hover{background:#8a5d3d}
+    button.btn.danger{border-color:transparent;background:none;color:var(--red)}
+    button.btn.danger:hover{background:#f6e5e2}
+    button.btn:disabled{opacity:.45;cursor:not-allowed}
+    .msg{padding:10px 12px;border-radius:8px;margin:10px 0;font-size:13px;display:none}
+    .msg.ok{display:block;background:#e7f3ec;color:var(--green)}
+    .msg.err{display:block;background:#f6e5e2;color:var(--red)}
+
+    .recruit-only{display:none}
+    #photoPreview img{max-width:220px;margin-top:8px;display:block;border:1px solid var(--line);border-radius:8px}
+    .photo-box{margin-bottom:10px}
+
+    /* プレビュー */
+    .pv-overlay{position:fixed;inset:0;z-index:50;background:rgba(45,41,36,.45);display:none;
+      align-items:flex-start;justify-content:center;padding:24px 14px;overflow:auto}
+    .pv-overlay.open{display:flex}
+    .pv-sheet{position:relative;width:100%;max-width:720px;background:var(--paper);
+      border-radius:14px;padding:clamp(20px,5vw,44px);margin:auto 0}
+    .pv-close{position:sticky;top:0;float:right;font:inherit;font-size:13px;border:1px solid var(--line-strong);
+      background:var(--paper);color:var(--brown);border-radius:999px;padding:5px 14px;cursor:pointer}
+    .pv-note{font-size:11px;color:var(--muted);margin:0 0 18px}
+    .pv-kicker{font-size:12px;letter-spacing:.08em;color:var(--pv-ink,var(--brown));margin:0 0 6px}
+    .pv-sheet h1{font-family:var(--serif);font-size:clamp(22px,4vw,30px);line-height:1.5;margin:0 0 6px}
+    .pv-subtitle{color:var(--text-soft);margin:0 0 8px}
+    .pv-meta{font-size:13px;color:var(--muted);margin:0 0 18px}
+    .pv-image{width:100%;border-radius:10px;border:1px solid var(--line);display:block;margin-bottom:20px}
+    .pv-body p{margin:0 0 14px;color:var(--text-soft)}
+    .pv-box{background:var(--pv-soft,var(--paper-soft));border-radius:10px;padding:16px 18px;margin:20px 0}
+    .pv-box h2{font-family:var(--serif);font-size:15px;margin:0 0 8px;color:var(--ink)}
+    .pv-box ul{margin:0;padding-left:20px;color:var(--text-soft)}
+    .pv-box li{margin-bottom:4px}
+    .pv-voice{border-left:3px solid var(--pv-accent,var(--brown));margin:0 0 10px;padding:2px 0 2px 12px;color:var(--text-soft)}
+    .pv-instructor{margin-top:20px;padding-top:14px;border-top:1px solid var(--line);font-size:14px;color:var(--text-soft)}
+    .pv-fact{display:grid;grid-template-columns:7em 1fr;gap:4px 10px;font-size:14px;color:var(--text-soft)}
+    .pv-fact dt{color:var(--muted)}
+    .pv-fact dd{margin:0}
+  </style>
+</head>
+<body>
+  <div class="bar">
+    <h1>うんなん暮らしの学び帖<small>管理画面</small></h1>
+    <nav class="tabs" id="tabs" style="display:none">
+      <button class="tab active" data-view="articles">記事</button>
+      <button class="tab" data-view="courses">講座</button>
+      <button class="tab" data-view="settings">サイト設定</button>
+    </nav>
+    <span class="who" id="who">確認中…</span>
+  </div>
+
+  <div id="gate" class="wrap single"><div class="card">読み込み中…</div></div>
+
+  <!-- ===== 記事 ===== -->
+  <div id="view-articles" class="wrap" style="display:none">
+    <aside class="card">
+      <button class="btn brown" id="newBtn" style="width:100%;margin-bottom:12px">＋ 新規作成</button>
+      <div class="filters">
+        <div class="chips" id="statusChips">
+          <button class="chip active" data-status="">すべて</button>
+          <button class="chip" data-status="published">公開</button>
+          <button class="chip" data-status="draft">下書き</button>
+        </div>
+        <select id="filterType">
+          <option value="">すべての種類</option>
+          <option value="report">活動レポート</option>
+          <option value="recruit">募集案内</option>
+          <option value="notice">お知らせ</option>
+        </select>
+        <input type="search" id="filterQ" placeholder="タイトルで検索">
+      </div>
+      <div id="list"></div>
+    </aside>
+
+    <main class="card">
+      <div id="msg" class="msg"></div>
+
+      <div class="grid2">
+        <label class="field"><span>投稿タイプ</span>
+          <select id="post_type">
+            <option value="report">活動レポート</option>
+            <option value="recruit">募集案内</option>
+            <option value="notice">お知らせ</option>
+          </select>
+        </label>
+        <label class="field"><span>講座</span><select id="course_id"></select></label>
+      </div>
+      <div class="grid2">
+        <label class="field"><span>開催日</span><input type="date" id="event_date"></label>
+        <label class="field"><span>開催場所</span><input id="place" placeholder="例：雲南市 木次町"></label>
+      </div>
+      <label class="field"><span>タイトル</span><input id="title"></label>
+      <label class="field"><span>サブタイトル</span><input id="subtitle" placeholder="タイトル下のリード見出し"></label>
+      <label class="field"><span>抜粋（一覧用）</span><textarea id="excerpt"></textarea></label>
+
+      <div class="report-only" id="reportFields">
+        <label class="field"><span>本文</span><textarea id="body" style="min-height:140px"></textarea></label>
+        <label class="field"><span>今回の内容（1行に1つ）</span><textarea id="activity_items"></textarea></label>
+        <div class="grid2">
+          <label class="field"><span>講師名</span><input id="instructor_name"></label>
+          <label class="field"><span>講師肩書き</span><input id="instructor_title"></label>
+        </div>
+        <label class="field"><span>代表の参加者の声</span><input id="participant_voice_main"></label>
+        <label class="field"><span>その他の声（1行に1つ）</span><textarea id="participant_voices"></textarea></label>
+      </div>
+
+      <div class="recruit-only" id="recruitFields">
+        <div class="grid2">
+          <label class="field"><span>開催時間</span><input id="event_time" placeholder="例：10:00から13:00"></label>
+          <label class="field"><span>参加費</span><input id="fee" placeholder="例：1,000円"></label>
+        </div>
+        <div class="grid2">
+          <label class="field"><span>申込締切</span><input type="date" id="application_deadline"></label>
+          <label class="field"><span>申込URL</span><input id="application_url"></label>
+        </div>
+      </div>
+
+      <div class="sec-title">内容メモ・Instagram</div>
+      <label class="field"><span>内容メモ（ChatGPT用素材）</span><textarea id="content_memo"></textarea></label>
+      <div class="grid2">
+        <label class="field"><span>Instagram本文</span><textarea id="instagram_caption"></textarea></label>
+        <label class="field"><span>ハッシュタグ</span><textarea id="hashtags"></textarea></label>
+      </div>
+
+      <div class="sec-title">写真（メイン1枚）</div>
+      <div class="photo-box">
+        <input type="file" id="photoInput" accept="image/*">
+        <span class="hint" id="photoStatus"></span>
+        <div id="photoPreview"></div>
+        <input type="hidden" id="main_image_file_id">
+      </div>
+      <label class="field"><span>画像パス（任意・Drive未使用時のフォールバック）</span>
+        <input id="image_path" placeholder="例：assets/images/karin.png"></label>
+
+      <div class="checks">
+        <strong style="font-size:13px">公開前チェック</strong>
+        <label><input type="checkbox" class="pc" id="photo_confirmed"> 写真掲載に問題がないことを確認しました</label>
+        <label><input type="checkbox" class="pc" id="privacy_confirmed"> 顔や個人情報が写りすぎていないことを確認しました</label>
+        <label><input type="checkbox" class="pc" id="permission_confirmed"> 必要に応じて掲載許可を確認しました</label>
+        <p class="hint">3点すべて確認すると「公開」が使えます。</p>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="previewBtn">プレビュー</button>
+        <button class="btn" id="draftBtn">下書き保存</button>
+        <button class="btn primary" id="publishBtn" disabled>公開</button>
+        <span class="hint" id="statusLabel"></span>
+        <span class="spacer"></span>
+        <button class="btn" id="dupBtn" hidden>複製して新規</button>
+        <button class="btn" id="unpublishBtn" hidden>非公開に戻す</button>
+        <button class="btn danger" id="deleteBtn" hidden>削除</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- ===== 講座 ===== -->
+  <div id="view-courses" class="wrap" style="display:none">
+    <aside class="card">
+      <button class="btn brown" id="newCourseBtn" style="width:100%;margin-bottom:12px">＋ 新しい講座</button>
+      <div id="courseList"></div>
+    </aside>
+    <main class="card">
+      <div id="courseMsg" class="msg"></div>
+      <div class="grid2">
+        <label class="field"><span>講座ID（半角英数字）</span><input id="c_course_id" placeholder="例：cooking"></label>
+        <label class="field"><span>講座名</span><input id="c_course_name"></label>
+      </div>
+      <div class="grid2">
+        <label class="field"><span>カテゴリ（見出し上の小さな文字）</span><input id="c_category" placeholder="例：暮らしのキッチン"></label>
+        <label class="field"><span>開催目安</span><input id="c_activity_months" placeholder="例：5月・7月・9月ごろ"></label>
+      </div>
+      <label class="field"><span>ひとことコピー</span><input id="c_copy"></label>
+      <label class="field"><span>説明文</span><textarea id="c_description"></textarea></label>
+
+      <div class="sec-title">見た目</div>
+      <div class="grid2">
+        <label class="field"><span>アイコン</span>
+          <select id="c_icon_type">
+            <option value="bowl">bowl（お椀）</option>
+            <option value="pot">pot（鍋）</option>
+            <option value="flower">flower（花）</option>
+            <option value="leaf">leaf（葉）</option>
+            <option value="sprout">sprout（芽）</option>
+            <option value="moon">moon（月）</option>
+          </select>
+        </label>
+        <label class="field"><span>画像パス（任意）</span><input id="c_image_path" placeholder="例：assets/images/cooking.png"></label>
+      </div>
+      <div class="grid3">
+        <label class="field"><span>アクセント色</span>
+          <span class="color-field"><input type="color" id="c_accent_color_pick"><input id="c_accent_color" placeholder="#c9824a"></span></label>
+        <label class="field"><span>うすい背景色</span>
+          <span class="color-field"><input type="color" id="c_accent_soft_pick"><input id="c_accent_soft" placeholder="#f5e4d5"></span></label>
+        <label class="field"><span>濃い文字色</span>
+          <span class="color-field"><input type="color" id="c_accent_ink_pick"><input id="c_accent_ink" placeholder="#9f5f35"></span></label>
+      </div>
+      <div class="grid2">
+        <label class="field"><span>表示順（小さいほど上）</span><input type="number" id="c_display_order" min="1"></label>
+        <label class="field" style="display:flex;align-items:center;gap:8px;margin-top:22px">
+          <input type="checkbox" id="c_is_main_course" style="width:auto"> <span style="margin:0">主要講座として表示</span>
+        </label>
+      </div>
+      <div class="actions">
+        <button class="btn brown" id="courseSaveBtn">保存</button>
+        <span class="hint" id="courseStatusLabel"></span>
+      </div>
+      <p class="hint">※ 講座の削除は影響が大きいため、スプレッドシートから直接行ってください。</p>
+    </main>
+  </div>
+
+  <!-- ===== サイト設定 ===== -->
+  <div id="view-settings" class="wrap single" style="display:none">
+    <main class="card">
+      <div id="settingsMsg" class="msg"></div>
+      <div class="sec-title" style="margin-top:0">サイト全体の設定</div>
+      <p class="hint" style="margin:0 0 14px">トップページの文言や問い合わせ先など、サイト全体で使う設定です。</p>
+      <div id="settingsFields"></div>
+      <div class="actions">
+        <button class="btn brown" id="settingsSaveBtn">設定を保存</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- ===== プレビュー ===== -->
+  <div class="pv-overlay" id="pvOverlay">
+    <div class="pv-sheet">
+      <button class="pv-close" id="pvClose">閉じる ×</button>
+      <p class="pv-note">プレビュー（実際の公開ページの見た目に近づけた簡易表示です）</p>
+      <div id="pvBody"></div>
+    </div>
+  </div>
+
+  <script>
+    var MOCK = /[?&]mock=1/.test(location.search) && !(window.google && google.script && google.script.run);
+    var courses = [];           // 記事フォーム用（course_id / course_name / accent系）
+    var articles = [];          // 一覧キャッシュ
+    var editingId = "";
+    var editingStatus = "";
+    var filter = { status: "", type: "", q: "" };
+    var adminCourses = null;    // 講座タブ用（全カラム）
+    var editingCourseId = "";
+    var settingsRows = null;    // サイト設定タブ用
+
+    function $(id){ return document.getElementById(id); }
+    function val(id){ return $(id).value; }
+    function setVal(id,v){ $(id).value = v == null ? "" : v; }
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+    function escapeAttr(s){ return escapeHtml(s).replace(/`/g,"&#96;"); }
+    function splitLines(v){ return String(v||"").split(/\r?\n/).map(function(s){return s.trim();}).filter(Boolean); }
+    function jpDate(iso){
+      var m = String(iso||"").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      return m ? (+m[1])+"年"+(+m[2])+"月"+(+m[3])+"日" : String(iso||"");
+    }
+    var TYPE_LABELS = { report:"活動レポート", recruit:"募集案内", notice:"お知らせ" };
+    function statusJa(s){ return { published:"公開", draft:"下書き", scheduled:"予約" }[s] || s || "下書き"; }
+
+    // --- GAS呼び出し（Promise化）。MOCK時はローカルのサンプルデータで動く。---
+    function gasRun(name){
+      var args = [].slice.call(arguments, 1);
+      return new Promise(function(resolve, reject){
+        if (MOCK) return mockRun(name, args).then(resolve, reject);
+        if (!(window.google && google.script && google.script.run)) {
+          return reject(new Error("GAS管理画面として起動できませんでした。"));
+        }
+        var runner = google.script.run
+          .withSuccessHandler(resolve)
+          .withFailureHandler(function(e){ reject(new Error(e && e.message || String(e))); });
+        runner[name].apply(runner, args);
+      });
+    }
+
+    function showMsgIn(boxId, text, kind){
+      var m = $(boxId); m.textContent = text; m.className = "msg " + (kind||"ok");
+      if(kind !== "err"){ setTimeout(function(){ m.className = "msg"; }, 4000); }
+    }
+    function showMsg(text, kind){ showMsgIn("msg", text, kind); }
+
+    /* =============== タブ =============== */
+    function switchView(view){
+      document.querySelectorAll(".tab").forEach(function(t){
+        t.classList.toggle("active", t.dataset.view === view);
+      });
+      ["articles","courses","settings"].forEach(function(v){
+        $("view-"+v).style.display = (v === view) ? "grid" : "none";
+      });
+      if(view === "courses" && adminCourses === null) loadCoursesTab();
+      if(view === "settings" && settingsRows === null) loadSettingsTab();
+    }
+
+    /* =============== 記事：一覧・絞り込み =============== */
+    function renderList(){
+      var box = $("list"); box.innerHTML = "";
+      var q = filter.q.toLowerCase();
+      var shown = articles.filter(function(a){
+        if(filter.status === "published" && a.status !== "published") return false;
+        if(filter.status === "draft" && a.status === "published") return false;
+        if(filter.type && a.post_type !== filter.type) return false;
+        if(q && String(a.title||"").toLowerCase().indexOf(q) < 0) return false;
+        return true;
+      });
+      shown.forEach(function(a){
+        var b = document.createElement("button");
+        b.className = "list-item" + (a.article_id === editingId ? " selected" : "");
+        var cls = a.status === "published" ? "published" : "draft";
+        var label = { published:"公開", draft:"下書き", scheduled:"予約" }[a.status] || a.status || "下書き";
+        b.innerHTML = '<span class="badge '+cls+'">'+escapeHtml(label)+'</span> '+ escapeHtml(a.title || "(無題)") +
+          '<div class="meta">'+ escapeHtml(a.event_date || "") +'｜'+ escapeHtml(TYPE_LABELS[a.post_type] || a.post_type || "") +'</div>';
+        b.onclick = function(){ loadArticle(a.article_id); };
+        box.appendChild(b);
+      });
+      if(!shown.length){ box.innerHTML = '<p class="hint">該当する記事がありません。</p>'; }
+    }
+
+    function reloadList(){
+      return gasRun("getAdminData").then(function(d){
+        articles = d.articles || [];
+        renderList();
+      });
+    }
+
+    /* =============== 記事：フォーム =============== */
+    var ARTICLE_FIELDS = ["event_date","place","title","subtitle","excerpt","body","activity_items",
+      "instructor_name","instructor_title","participant_voice_main","participant_voices",
+      "event_time","fee","application_deadline","application_url","content_memo",
+      "instagram_caption","hashtags","image_path","main_image_file_id"];
+    var CHECK_FIELDS = ["photo_confirmed","privacy_confirmed","permission_confirmed"];
+
+    function updateTypeFields(){
+      var t = val("post_type");
+      $("reportFields").style.display = (t === "recruit") ? "none" : "block";
+      $("recruitFields").style.display = (t === "recruit") ? "block" : "none";
+    }
+    function hasPhoto(){ return !!($("main_image_file_id").value || val("image_path").trim()); }
+    function updatePublishGate(){
+      var checks = CHECK_FIELDS.every(function(id){ return $(id).checked; });
+      $("publishBtn").disabled = !(checks && hasPhoto());
+    }
+    function updateEditButtons(){
+      $("dupBtn").hidden = !editingId;
+      $("deleteBtn").hidden = !editingId;
+      $("unpublishBtn").hidden = !(editingId && editingStatus === "published");
+    }
+
+    function clearForm(){
+      editingId = ""; editingStatus = "";
+      ARTICLE_FIELDS.forEach(function(id){ setVal(id,""); });
+      $("post_type").value = "report";
+      CHECK_FIELDS.forEach(function(id){ $(id).checked = false; });
+      $("photoInput").value = ""; $("photoStatus").textContent = ""; showPhotoPreview("");
+      $("statusLabel").textContent = "新規";
+      updateTypeFields(); updatePublishGate(); updateEditButtons(); renderList();
+      window.scrollTo(0,0);
+    }
+
+    function loadArticle(id){
+      gasRun("getArticle", id).then(function(r){
+        editingId = r.article_id || "";
+        editingStatus = r.status || "draft";
+        setVal("post_type", r.post_type || "report");
+        setVal("course_id", r.course_id || (courses[0] && courses[0].course_id));
+        ARTICLE_FIELDS.forEach(function(k){ setVal(k, r[k]); });
+        CHECK_FIELDS.forEach(function(k){ $(k).checked = String(r[k]).toUpperCase() === "TRUE"; });
+        $("photoInput").value = ""; $("photoStatus").textContent = "";
+        showPhotoPreview(r.main_image_file_id);
+        $("statusLabel").textContent = "編集中：" + statusJa(editingStatus);
+        updateTypeFields(); updatePublishGate(); updateEditButtons(); renderList();
+        window.scrollTo(0,0);
+      }).catch(function(e){ showMsg(e.message, "err"); });
+    }
+
+    function collect(intent){
+      var out = { intent: intent, article_id: editingId, post_type: val("post_type"), course_id: val("course_id") };
+      ARTICLE_FIELDS.forEach(function(k){ out[k] = val(k); });
+      CHECK_FIELDS.forEach(function(k){ out[k] = $(k).checked; });
+      return out;
+    }
+
+    function save(intent){
+      $("draftBtn").disabled = true; $("publishBtn").disabled = true;
+      gasRun("saveArticle", collect(intent)).then(function(r){
+        editingId = r.article_id; editingStatus = r.status;
+        showMsg((intent === "publish" ? "公開しました" : "下書き保存しました") + "（" + r.article_id + "）", "ok");
+        $("statusLabel").textContent = "編集中：" + statusJa(r.status);
+        $("draftBtn").disabled = false; updatePublishGate(); updateEditButtons();
+        reloadList();
+      }).catch(function(e){
+        showMsg(e.message, "err");
+        $("draftBtn").disabled = false; updatePublishGate();
+      });
+    }
+
+    function unpublish(){
+      if(!editingId) return;
+      if(!confirm("この記事を非公開（下書き）に戻します。よろしいですか？")) return;
+      gasRun("setArticleStatus", editingId, "draft").then(function(r){
+        editingStatus = r.status;
+        $("statusLabel").textContent = "編集中：" + statusJa(r.status);
+        showMsg("非公開に戻しました。", "ok");
+        updateEditButtons(); reloadList();
+      }).catch(function(e){ showMsg(e.message, "err"); });
+    }
+
+    function removeArticle(){
+      if(!editingId) return;
+      if(!confirm("この記事を削除します。元に戻せません。よろしいですか？")) return;
+      gasRun("deleteArticle", editingId).then(function(){
+        showMsg("削除しました。", "ok");
+        reloadList().then(clearForm);
+      }).catch(function(e){ showMsg(e.message, "err"); });
+    }
+
+    function duplicateArticle(){
+      // 現在のフォーム内容のまま、新規記事として編集を続ける（保存するまでシートには入らない）
+      editingId = ""; editingStatus = "";
+      setVal("title", val("title") ? val("title") + "（コピー）" : "");
+      CHECK_FIELDS.forEach(function(id){ $(id).checked = false; });
+      $("statusLabel").textContent = "新規（複製）";
+      updatePublishGate(); updateEditButtons(); renderList();
+      showMsg("複製しました。「下書き保存」すると新しい記事として保存されます。", "ok");
+      window.scrollTo(0,0);
+    }
+
+    /* =============== 記事：写真 =============== */
+    function resizeToBase64(file, maxSide, cb){
+      var reader = new FileReader();
+      reader.onload = function(){
+        var img = new Image();
+        img.onload = function(){
+          var w = img.width, h = img.height, scale = Math.min(1, maxSide/Math.max(w,h));
+          var cw = Math.round(w*scale), ch = Math.round(h*scale);
+          var canvas = document.createElement("canvas");
+          canvas.width = cw; canvas.height = ch;
+          canvas.getContext("2d").drawImage(img, 0, 0, cw, ch);
+          cb(canvas.toDataURL("image/jpeg", 0.85).split(",")[1]);
+        };
+        img.onerror = function(){ cb(null); };
+        img.src = reader.result;
+      };
+      reader.onerror = function(){ cb(null); };
+      reader.readAsDataURL(file);
+    }
+
+    function onPhotoSelected(e){
+      var file = e.target.files && e.target.files[0];
+      if(!file) return;
+      $("photoStatus").textContent = "アップロード中…";
+      resizeToBase64(file, 1600, function(b64){
+        if(!b64){ $("photoStatus").textContent = "画像の読み込みに失敗しました。"; return; }
+        gasRun("uploadPhoto", { filename: file.name, mimeType: "image/jpeg", dataBase64: b64 }).then(function(r){
+          setVal("main_image_file_id", r.file_id);
+          $("photoPreview").innerHTML = '<img src="'+escapeAttr(r.url)+'" alt="プレビュー">';
+          $("photoStatus").textContent = "保存しました（"+r.name+"）";
+          updatePublishGate();
+        }).catch(function(err){
+          $("photoStatus").textContent = "保存に失敗：" + err.message;
+        });
+      });
+    }
+
+    function photoUrl(){
+      var id = $("main_image_file_id").value;
+      if(id){
+        var mock = $("photoPreview").querySelector("img");
+        return (MOCK && mock) ? mock.src : "https://lh3.googleusercontent.com/d/" + id;
+      }
+      return val("image_path").trim();
+    }
+    function showPhotoPreview(fileId){
+      $("photoPreview").innerHTML = fileId
+        ? '<img src="https://lh3.googleusercontent.com/d/'+escapeAttr(fileId)+'" alt="プレビュー">' : "";
+    }
+
+    /* =============== 記事：プレビュー =============== */
+    function courseOf(id){
+      for(var i=0;i<courses.length;i++){ if(courses[i].course_id === id) return courses[i]; }
+      return null;
+    }
+
+    function openPreview(){
+      var t = val("post_type");
+      var c = courseOf(val("course_id")) || {};
+      var style = 'style="--pv-accent:'+escapeAttr(c.accent_color||"#9b6a47")+
+        ';--pv-soft:'+escapeAttr(c.accent_soft||"#f8f1e7")+
+        ';--pv-ink:'+escapeAttr(c.accent_ink||"#9b6a47")+'"';
+      var html = '<div '+style+'>';
+      html += '<p class="pv-kicker">'+escapeHtml(c.category || TYPE_LABELS[t] || "")+'｜'+escapeHtml(c.course_name||"")+'</p>';
+      html += '<h1>'+ (escapeHtml(val("title")) || "（タイトル未入力）") +'</h1>';
+      if(val("subtitle")) html += '<p class="pv-subtitle">'+escapeHtml(val("subtitle"))+'</p>';
+      var meta = [jpDate(val("event_date")), val("place")].filter(Boolean).join("｜");
+      if(meta) html += '<p class="pv-meta">'+escapeHtml(meta)+'</p>';
+      var img = photoUrl();
+      if(img) html += '<img class="pv-image" src="'+escapeAttr(img)+'" alt="" onerror="this.style.display=\'none\'">';
+
+      if(t === "recruit"){
+        if(val("excerpt")) html += '<div class="pv-body"><p>'+escapeHtml(val("excerpt"))+'</p></div>';
+        html += '<div class="pv-box"><h2>開催のご案内</h2><dl class="pv-fact">';
+        [["開催日", jpDate(val("event_date"))],["時間", val("event_time")],["場所", val("place")],
+         ["参加費", val("fee")],["申込締切", jpDate(val("application_deadline"))]].forEach(function(row){
+          if(row[1]) html += '<dt>'+row[0]+'</dt><dd>'+escapeHtml(row[1])+'</dd>';
+        });
+        html += '</dl></div>';
+        if(val("application_url")) html += '<p class="pv-body"><a href="'+escapeAttr(val("application_url"))+'" target="_blank" rel="noopener">申込フォームへ →</a></p>';
+      } else {
+        html += '<div class="pv-body">' + splitLines(val("body")).map(function(p){
+          return '<p>'+escapeHtml(p)+'</p>';
+        }).join("") + '</div>';
+        var items = splitLines(val("activity_items"));
+        if(items.length){
+          html += '<div class="pv-box"><h2>今回の内容</h2><ul>' +
+            items.map(function(i){ return '<li>'+escapeHtml(i)+'</li>'; }).join("") + '</ul></div>';
+        }
+        var voices = [val("participant_voice_main")].filter(Boolean).concat(splitLines(val("participant_voices")));
+        if(voices.length){
+          html += '<div class="pv-box"><h2>参加者の声</h2>' +
+            voices.map(function(v){ return '<p class="pv-voice">'+escapeHtml(v)+'</p>'; }).join("") + '</div>';
+        }
+        if(val("instructor_name")){
+          html += '<p class="pv-instructor">講師：'+escapeHtml(val("instructor_name")) +
+            (val("instructor_title") ? '（'+escapeHtml(val("instructor_title"))+'）' : '') + '</p>';
+        }
+      }
+      html += '</div>';
+      $("pvBody").innerHTML = html;
+      $("pvOverlay").classList.add("open");
+    }
+
+    /* =============== 講座タブ =============== */
+    var COURSE_FIELD_IDS = ["course_id","course_name","category","copy","description",
+      "activity_months","icon_type","accent_color","accent_soft","accent_ink","display_order","image_path"];
+
+    function loadCoursesTab(){
+      $("courseList").innerHTML = '<p class="hint">読み込み中…</p>';
+      gasRun("getCoursesAdmin").then(function(rows){
+        adminCourses = rows || [];
+        renderCourseList();
+        if(adminCourses.length) loadCourseForm(adminCourses[0].course_id);
+        else clearCourseForm();
+      }).catch(function(e){ showMsgIn("courseMsg", e.message, "err"); });
+    }
+
+    function renderCourseList(){
+      var box = $("courseList"); box.innerHTML = "";
+      (adminCourses||[]).forEach(function(c){
+        var b = document.createElement("button");
+        b.className = "list-item" + (c.course_id === editingCourseId ? " selected" : "");
+        b.innerHTML = '<span class="swatch-dot" style="background:'+escapeAttr(c.accent_color||"#ccc")+'"></span>' +
+          escapeHtml(c.course_name || c.course_id) +
+          '<div class="meta">'+escapeHtml(c.category||"")+'</div>';
+        b.onclick = function(){ loadCourseForm(c.course_id); };
+        box.appendChild(b);
+      });
+      if(!(adminCourses||[]).length){ box.innerHTML = '<p class="hint">まだ講座がありません。</p>'; }
+    }
+
+    function clearCourseForm(){
+      editingCourseId = "";
+      COURSE_FIELD_IDS.forEach(function(k){ setVal("c_"+k, ""); });
+      $("c_icon_type").value = "leaf";
+      $("c_is_main_course").checked = false;
+      $("c_course_id").disabled = false;
+      $("c_display_order").value = String((adminCourses||[]).length + 1);
+      syncColorPickers();
+      $("courseStatusLabel").textContent = "新規講座";
+      renderCourseList();
+    }
+
+    function loadCourseForm(id){
+      var c = (adminCourses||[]).filter(function(x){ return x.course_id === id; })[0];
+      if(!c) return;
+      editingCourseId = id;
+      COURSE_FIELD_IDS.forEach(function(k){ setVal("c_"+k, c[k]); });
+      if(!c.icon_type) $("c_icon_type").value = "leaf";
+      $("c_is_main_course").checked = String(c.is_main_course).toUpperCase() === "TRUE";
+      $("c_course_id").disabled = true; // IDは記事と紐づくため既存講座では変更不可
+      syncColorPickers();
+      $("courseStatusLabel").textContent = "編集中：" + (c.course_name || id);
+      renderCourseList();
+    }
+
+    function saveCourseForm(){
+      var payload = { is_main_course: $("c_is_main_course").checked ? "TRUE" : "FALSE" };
+      COURSE_FIELD_IDS.forEach(function(k){ payload[k] = val("c_"+k); });
+      $("courseSaveBtn").disabled = true;
+      gasRun("saveCourse", payload).then(function(r){
+        $("courseSaveBtn").disabled = false;
+        showMsgIn("courseMsg", "保存しました（"+r.course_id+"）", "ok");
+        adminCourses = null;   // 次回開いたとき再読込
+        loadCoursesTab();
+        return reloadCoursesForArticles();
+      }).catch(function(e){
+        $("courseSaveBtn").disabled = false;
+        showMsgIn("courseMsg", e.message, "err");
+      });
+    }
+
+    // 記事フォームの講座セレクトも最新にしておく
+    function reloadCoursesForArticles(){
+      return gasRun("getAdminData").then(function(d){
+        courses = d.courses || [];
+        fillCourses();
+      });
+    }
+
+    // カラーピッカーとテキスト入力の同期
+    function bindColorPair(textId){
+      var pick = $(textId + "_pick"), text = $(textId);
+      pick.addEventListener("input", function(){ text.value = pick.value; });
+      text.addEventListener("input", function(){
+        if(/^#[0-9a-fA-F]{6}$/.test(text.value.trim())) pick.value = text.value.trim();
+      });
+    }
+    function syncColorPickers(){
+      ["c_accent_color","c_accent_soft","c_accent_ink"].forEach(function(id){
+        var v = val(id).trim();
+        if(/^#[0-9a-fA-F]{6}$/.test(v)) $(id+"_pick").value = v;
+      });
+    }
+
+    /* =============== サイト設定タブ =============== */
+    var SETTING_LABELS = {
+      organization_name: "組織名",
+      site_name: "サイト名",
+      site_introduction: "サイト紹介（キャッチコピー上のひとこと）",
+      top_copy: "トップのキャッチコピー",
+      site_description: "トップの説明文",
+      instagram_url: "Instagram URL",
+      contact_department: "お問い合わせ担当課",
+      contact_tel: "電話番号",
+      contact_hours: "受付時間",
+      contact_instagram_note: "Instagram案内文"
+    };
+    var SETTING_MULTILINE = { top_copy:1, site_description:1, contact_instagram_note:1 };
+
+    function loadSettingsTab(){
+      $("settingsFields").innerHTML = '<p class="hint">読み込み中…</p>';
+      gasRun("getSettingsAdmin").then(function(rows){
+        settingsRows = rows || [];
+        var html = settingsRows.map(function(r, i){
+          var label = SETTING_LABELS[r.key] || r.key;
+          var input = (SETTING_MULTILINE[r.key] || /\n/.test(r.value))
+            ? '<textarea data-setting-index="'+i+'">'+escapeHtml(r.value)+'</textarea>'
+            : '<input data-setting-index="'+i+'" value="'+escapeAttr(r.value)+'">';
+          return '<label class="field"><span>'+escapeHtml(label)+'</span>'+input+'</label>';
+        }).join("");
+        $("settingsFields").innerHTML = html || '<p class="hint">設定がありません。</p>';
+      }).catch(function(e){ showMsgIn("settingsMsg", e.message, "err"); });
+    }
+
+    function saveSettingsForm(){
+      var entries = [];
+      document.querySelectorAll("[data-setting-index]").forEach(function(el){
+        var row = settingsRows[Number(el.dataset.settingIndex)];
+        entries.push({ key: row.key, value: el.value });
+      });
+      $("settingsSaveBtn").disabled = true;
+      gasRun("saveSettings", entries).then(function(){
+        $("settingsSaveBtn").disabled = false;
+        showMsgIn("settingsMsg", "設定を保存しました。公開サイトには次の読み込みから反映されます。", "ok");
+      }).catch(function(e){
+        $("settingsSaveBtn").disabled = false;
+        showMsgIn("settingsMsg", e.message, "err");
+      });
+    }
+
+    /* =============== 起動 =============== */
+    function fillCourses(){
+      var sel = $("course_id"), current = sel.value;
+      sel.innerHTML = "";
+      courses.forEach(function(c){
+        var o = document.createElement("option");
+        o.value = c.course_id; o.textContent = c.course_name;
+        sel.appendChild(o);
+      });
+      if(current) sel.value = current;
+    }
+
+    function showGateError(text){
+      $("gate").style.display = "grid";
+      $("gate").innerHTML = '<div class="card"><div class="msg err" style="display:block">'+escapeHtml(text)+'</div><p class="hint">管理画面はApps ScriptのウェブアプリURL（末尾が /exec?page=admin）で開いてください。ローカルのHTMLを直接開くとGoogle Sheets連携は動きません（動作確認だけなら ?mock=1 を付けるとサンプルデータで開けます）。</p></div>';
+      $("who").textContent = "";
+    }
+
+    function boot(){
+      if(!MOCK && !(window.google && google.script && google.script.run)){
+        showGateError("GAS管理画面として起動できませんでした。");
+        return;
+      }
+      var bootTimer = setTimeout(function(){
+        if($("view-articles").style.display === "none"){
+          showGateError("管理データの読み込みに時間がかかっています。ログイン状態、デプロイ設定、ALLOWED_EDITORS を確認してください。");
+        }
+      }, 15000);
+      gasRun("getAdminData").then(function(d){
+        clearTimeout(bootTimer);
+        $("gate").style.display = "none";
+        $("tabs").style.display = "flex";
+        $("view-articles").style.display = "grid";
+        $("who").textContent = d.email + (MOCK ? "（モック）" : "");
+        courses = d.courses || [];
+        articles = d.articles || [];
+        fillCourses();
+        renderList();
+        clearForm();
+      }).catch(function(e){
+        clearTimeout(bootTimer);
+        showGateError(e.message);
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", function(){
+      // タブ
+      document.querySelectorAll(".tab").forEach(function(t){
+        t.addEventListener("click", function(){ switchView(t.dataset.view); });
+      });
+      // 記事
+      $("post_type").addEventListener("change", updateTypeFields);
+      document.querySelectorAll(".pc").forEach(function(c){ c.addEventListener("change", updatePublishGate); });
+      $("photoInput").addEventListener("change", onPhotoSelected);
+      $("image_path").addEventListener("input", updatePublishGate);
+      $("newBtn").addEventListener("click", clearForm);
+      $("draftBtn").addEventListener("click", function(){ save("draft"); });
+      $("publishBtn").addEventListener("click", function(){ save("publish"); });
+      $("previewBtn").addEventListener("click", openPreview);
+      $("dupBtn").addEventListener("click", duplicateArticle);
+      $("unpublishBtn").addEventListener("click", unpublish);
+      $("deleteBtn").addEventListener("click", removeArticle);
+      $("pvClose").addEventListener("click", function(){ $("pvOverlay").classList.remove("open"); });
+      $("pvOverlay").addEventListener("click", function(e){ if(e.target === $("pvOverlay")) $("pvOverlay").classList.remove("open"); });
+      // 絞り込み
+      document.querySelectorAll("#statusChips .chip").forEach(function(ch){
+        ch.addEventListener("click", function(){
+          document.querySelectorAll("#statusChips .chip").forEach(function(x){ x.classList.remove("active"); });
+          ch.classList.add("active");
+          filter.status = ch.dataset.status;
+          renderList();
+        });
+      });
+      $("filterType").addEventListener("change", function(){ filter.type = this.value; renderList(); });
+      $("filterQ").addEventListener("input", function(){ filter.q = this.value.trim(); renderList(); });
+      // 講座
+      $("newCourseBtn").addEventListener("click", clearCourseForm);
+      $("courseSaveBtn").addEventListener("click", saveCourseForm);
+      bindColorPair("c_accent_color"); bindColorPair("c_accent_soft"); bindColorPair("c_accent_ink");
+      // サイト設定
+      $("settingsSaveBtn").addEventListener("click", saveSettingsForm);
+      boot();
+    });
+
+    /* =============== モック（ローカル動作確認用 ?mock=1） =============== */
+    function mockRun(name, args){
+      if(!window.__mockDb){
+        window.__mockDb = {
+          courses: [
+            { course_id:"cooking", course_name:"おしゃべりクッキング", category:"暮らしのキッチン",
+              copy:"食べて、話して、暮らしを楽しむ料理教室。", description:"季節の食材を使った料理を囲みながら、楽しく学び合う時間です。",
+              activity_months:"5月・7月・9月・10月ごろ", icon_type:"bowl",
+              accent_color:"#c9824a", accent_soft:"#f5e4d5", accent_ink:"#9f5f35",
+              is_main_course:"TRUE", display_order:"1", image_path:"" },
+            { course_id:"karin", course_name:"華凜", category:"暮らしの花",
+              copy:"学びと交流を重ねる、大人の女性のための時間。", description:"料理、手芸、ものづくり、健康教室、日帰り旅行など。",
+              activity_months:"10月・12月・1月・4月・6月ごろ", icon_type:"flower",
+              accent_color:"#b9788e", accent_soft:"#f4e4e9", accent_ink:"#965f72",
+              is_main_course:"TRUE", display_order:"2", image_path:"" }
+          ],
+          articles: [
+            { article_id:"article_0001", post_type:"report", course_id:"karin", status:"published",
+              event_date:"2026-06-24", place:"雲南市 木次町", title:"初夏の寄せ植えと、お茶の時間",
+              subtitle:"手を動かしたあとの、ゆっくりしたおしゃべり", excerpt:"季節の花で寄せ植えをつくりました。",
+              body:"季節の花を選ぶところから始めました。\nできあがった鉢を囲んで、お茶の時間。",
+              activity_items:"寄せ植えづくり\nお茶と交流会", participant_voice_main:"花を選ぶ時間がいちばん楽しかったです。",
+              participant_voices:"また参加したいです。", instructor_name:"山田 花子", instructor_title:"園芸家",
+              content_memo:"", instagram_caption:"", hashtags:"", event_time:"", fee:"",
+              application_deadline:"", application_url:"", image_path:"../assets/images/karin.png", main_image_file_id:"",
+              photo_confirmed:"TRUE", privacy_confirmed:"TRUE", permission_confirmed:"TRUE" },
+            { article_id:"article_0002", post_type:"report", course_id:"cooking", status:"draft",
+              event_date:"2026-07-05", place:"雲南市 三刀屋町", title:"夏野菜のさっぱり献立",
+              subtitle:"", excerpt:"", body:"", activity_items:"", participant_voice_main:"", participant_voices:"",
+              instructor_name:"", instructor_title:"", content_memo:"トマトの冷製…", instagram_caption:"", hashtags:"",
+              event_time:"", fee:"", application_deadline:"", application_url:"", image_path:"", main_image_file_id:"",
+              photo_confirmed:"", privacy_confirmed:"", permission_confirmed:"" },
+            { article_id:"article_0003", post_type:"recruit", course_id:"cooking", status:"published",
+              event_date:"2026-09-20", place:"JA会館 調理室", title:"秋のおしゃべりクッキング 参加者募集",
+              subtitle:"", excerpt:"秋の味覚を使った献立をみんなで。", body:"", activity_items:"",
+              participant_voice_main:"", participant_voices:"", instructor_name:"", instructor_title:"",
+              content_memo:"", instagram_caption:"", hashtags:"", event_time:"10:00から13:00", fee:"1,000円",
+              application_deadline:"2026-09-10", application_url:"https://example.com/form",
+              image_path:"../assets/images/cooking.png", main_image_file_id:"",
+              photo_confirmed:"TRUE", privacy_confirmed:"TRUE", permission_confirmed:"TRUE" }
+          ],
+          settings: [
+            { key:"organization_name", value:"JAしまね雲南地区本部" },
+            { key:"site_name", value:"うんなん暮らしの学び帖" },
+            { key:"site_introduction", value:"JAでひらく、講座と活動の記録。" },
+            { key:"top_copy", value:"食べて、つくって、話して。\n暮らしを少し楽しく。" },
+            { key:"site_description", value:"料理教室、JA女性大学、親子体験、赤ちゃん食堂など。\n雲南の暮らしに寄り添う小さな活動を、写真とことばで記録しています。" },
+            { key:"instagram_url", value:"https://www.instagram.com/" },
+            { key:"contact_department", value:"ふれあい課" },
+            { key:"contact_tel", value:"0854-xx-xxxx" },
+            { key:"contact_hours", value:"平日 9:00から17:00" },
+            { key:"contact_instagram_note", value:"日々の活動はInstagramでもお知らせします。" }
+          ],
+          seq: 3
+        };
+      }
+      var db = window.__mockDb;
+      function delay(v){ return new Promise(function(res){ setTimeout(function(){ res(v); }, 150); }); }
+      function findArticle(id){ return db.articles.filter(function(a){ return a.article_id === id; })[0]; }
+
+      switch(name){
+        case "getAdminData":
+          return delay({
+            email: "mock@example.com",
+            courses: db.courses.map(function(c){ return { course_id:c.course_id, course_name:c.course_name,
+              category:c.category, accent_color:c.accent_color, accent_soft:c.accent_soft, accent_ink:c.accent_ink }; }),
+            articles: db.articles.map(function(a){ return { article_id:a.article_id, post_type:a.post_type,
+              course_id:a.course_id, status:a.status, event_date:a.event_date, title:a.title }; })
+              .sort(function(x,y){ return String(y.event_date).localeCompare(String(x.event_date)); })
+          });
+        case "getArticle": {
+          var a = findArticle(args[0]);
+          return a ? delay(Object.assign({}, a)) : Promise.reject(new Error("記事が見つかりません: " + args[0]));
+        }
+        case "saveArticle": {
+          var p = args[0] || {}, intent = p.intent === "publish" ? "publish" : "draft";
+          if(!String(p.title||"").trim()) return Promise.reject(new Error("必須項目が未入力です: title"));
+          var id = p.article_id;
+          if(!id){ db.seq += 1; id = "article_" + ("0000"+db.seq).slice(-4); }
+          var row = findArticle(id) || (db.articles.unshift({article_id:id}), db.articles[0]);
+          Object.keys(p).forEach(function(k){ if(k!=="intent" && k!=="article_id") row[k] = String(p[k]); });
+          row.status = intent === "publish" ? "published" : "draft";
+          return delay({ ok:true, article_id:id, status:row.status });
+        }
+        case "setArticleStatus": {
+          var t2 = findArticle(args[0]);
+          if(!t2) return Promise.reject(new Error("記事が見つかりません"));
+          t2.status = args[1];
+          return delay({ ok:true, article_id:args[0], status:args[1] });
+        }
+        case "deleteArticle":
+          db.articles = db.articles.filter(function(a){ return a.article_id !== args[0]; });
+          return delay({ ok:true });
+        case "uploadPhoto":
+          return delay({ file_id:"mock-file", url:"data:image/jpeg;base64," + args[0].dataBase64, name:args[0].filename });
+        case "getCoursesAdmin":
+          return delay(db.courses.map(function(c){ return Object.assign({}, c); }));
+        case "saveCourse": {
+          var cp = args[0] || {};
+          if(!String(cp.course_id||"").trim() || !String(cp.course_name||"").trim()){
+            return Promise.reject(new Error("必須項目が未入力です: course_id / course_name"));
+          }
+          var found = db.courses.filter(function(c){ return c.course_id === cp.course_id; })[0];
+          if(!found){ found = { course_id: cp.course_id }; db.courses.push(found); }
+          Object.keys(cp).forEach(function(k){ found[k] = String(cp[k]); });
+          return delay({ ok:true, course_id:cp.course_id });
+        }
+        case "getSettingsAdmin":
+          return delay(db.settings.map(function(s){ return Object.assign({}, s); }));
+        case "saveSettings":
+          (args[0]||[]).forEach(function(e){
+            var row = db.settings.filter(function(s){ return s.key === e.key; })[0];
+            if(row) row.value = e.value; else db.settings.push({ key:e.key, value:e.value });
+          });
+          return delay({ ok:true });
+        default:
+          return Promise.reject(new Error("モック未対応の関数です: " + name));
+      }
+    }
+  </script>
+</body>
+</html>
