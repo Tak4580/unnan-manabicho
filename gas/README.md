@@ -160,12 +160,18 @@
 - **講座タブ**：講座の追加・編集（名前・カテゴリ・説明・アクセント色・表示順など）。
   講座IDは記事と紐づくため既存講座では変更不可。削除はシートから直接行う。
 - **サイト設定タブ**：Settings シートの文言（キャッチコピー・問い合わせ先など）を編集
+- **管理者設定タブ**（オーナー権限のみ表示）：管理者の追加・削除・権限変更。
+  権限は「オーナー（管理者設定も操作可）」と「スタッフ（記事・講座・サイト設定のみ）」の2種。
+  自分自身の降格・削除はできない。初回はスクリプトプロパティ ALLOWED_EDITORS の
+  メールがオーナーとして引き継がれ、以後は ADMIN_USERS プロパティ（JSON）で管理される
+  （ALLOWED_EDITORS にも同期される）。
 - 保存内容はスプレッドシートの各シートに書き込まれ、
   公開データAPIを通してそのまま公開サイトに反映される
 
 対応する `Code.gs` の関数：`getAdminData` / `getArticle` / `saveArticle` /
 `setArticleStatus` / `deleteArticle` / `getSettingsAdmin` / `saveSettings` /
-`getCoursesAdmin` / `saveCourse` / `uploadPhoto`
+`getCoursesAdmin` / `saveCourse` / `uploadPhoto` /
+`getAdminUsersAdmin` / `saveAdminUser` / `deleteAdminUser`
 
 ※ 写真は「管理画面を操作した人」の Drive に保存される（実行＝アクセスユーザーのため）。
   運用者がスプレッドシートのオーナーなら、中央の「うんなん暮らしの学び帖」フォルダに

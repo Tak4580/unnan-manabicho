@@ -254,16 +254,85 @@ function allowedEditors_() {
   var p = PropertiesService.getScriptProperties().getProperty("ALLOWED_EDITORS") || "";
   return p.split(/[,\n]/).map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean);
 }
+// --- 管理者リスト -----------------------------------------------------------
+// スクリプトプロパティ ADMIN_USERS に [{email, role}] のJSONで保存する。
+// role: "owner"（管理者設定タブも操作可）/ "staff"（記事・講座・サイト設定のみ）
+// 未設定なら旧 ALLOWED_EDITORS から初期化する（全員 owner 扱い）。
+function adminUsers_() {
+  var raw = PropertiesService.getScriptProperties().getProperty("ADMIN_USERS");
+  if (raw) {
+    try {
+      var list = JSON.parse(raw);
+      if (Object.prototype.toString.call(list) === "[object Array]" && list.length) return list;
+    } catch (e) {}
+  }
+  return allowedEditors_().map(function (email) { return { email: email, role: "owner" }; });
+}
+function saveAdminUsers_(list) {
+  var p = PropertiesService.getScriptProperties();
+  p.setProperty("ADMIN_USERS", JSON.stringify(list));
+  // 旧運用（ALLOWED_EDITORS）にも同期しておく
+  p.setProperty("ALLOWED_EDITORS", list.map(function (u) { return u.email; }).join(", "));
+}
+function currentRole_() {
+  var email = currentEmail_().toLowerCase();
+  var hit = adminUsers_().filter(function (u) {
+    return String(u.email || "").toLowerCase() === email;
+  })[0];
+  return hit ? (hit.role === "owner" ? "owner" : "staff") : "";
+}
 function assertStaff_() {
   var email = currentEmail_();
-  var list = allowedEditors_();
+  var list = adminUsers_().map(function (u) { return String(u.email || "").toLowerCase(); });
   if (!list.length) {
     throw new Error("管理者メールが未設定です。Apps Script の「プロジェクトの設定 > スクリプト プロパティ」で ALLOWED_EDITORS に許可するGoogleアカウントのメールを設定してください。");
   }
   if (list.indexOf(email.toLowerCase()) < 0) {
-    throw new Error("このアカウントには権限がありません（" + (email || "未ログイン") + "）。ALLOWED_EDITORS に登録されたアカウントでアクセスしてください。");
+    throw new Error("このアカウントには権限がありません（" + (email || "未ログイン") + "）。管理者に登録されたアカウントでアクセスしてください。");
   }
   return email;
+}
+function assertOwner_() {
+  var email = assertStaff_();
+  if (currentRole_() !== "owner") {
+    throw new Error("この操作はオーナー権限のアカウントだけができます。");
+  }
+  return email;
+}
+
+// --- 管理者の追加・削除・権限変更（管理者設定タブ）--------------------------
+function getAdminUsersAdmin() {
+  assertOwner_();
+  return adminUsers_().map(function (u) {
+    return { email: str_(u.email), role: u.role === "owner" ? "owner" : "staff" };
+  });
+}
+function saveAdminUser(payload) {
+  var me = assertOwner_().toLowerCase();
+  payload = payload || {};
+  var email = String(payload.email || "").trim().toLowerCase();
+  var role = payload.role === "owner" ? "owner" : "staff";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error("メールアドレスの形式が正しくありません。");
+  }
+  if (email === me && role !== "owner") {
+    throw new Error("自分自身の権限は変更できません。");
+  }
+  var list = adminUsers_();
+  var found = list.filter(function (u) { return String(u.email || "").toLowerCase() === email; })[0];
+  if (found) { found.role = role; } else { list.push({ email: email, role: role }); }
+  saveAdminUsers_(list);
+  return getAdminUsersAdmin();
+}
+function deleteAdminUser(email) {
+  var me = assertOwner_().toLowerCase();
+  email = String(email || "").trim().toLowerCase();
+  if (email === me) throw new Error("自分自身は削除できません。");
+  var list = adminUsers_().filter(function (u) {
+    return String(u.email || "").toLowerCase() !== email;
+  });
+  saveAdminUsers_(list);
+  return getAdminUsersAdmin();
 }
 
 // --- 管理画面の初期データ --------------------------------------------------
@@ -295,7 +364,7 @@ function getAdminData() {
   });
   // 開催日の新しい順
   articles.sort(function (a, b) { return String(b.event_date).localeCompare(String(a.event_date)); });
-  return { email: email, courses: courses, articles: articles };
+  return { email: email, role: currentRole_(), courses: courses, articles: articles };
 }
 
 // 1件を編集用に取得（値は文字列に正規化）

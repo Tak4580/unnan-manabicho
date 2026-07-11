@@ -63,6 +63,10 @@
       margin:20px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--line)}
     .hint{font-size:11px;color:var(--muted)}
     .list-title{font-family:var(--serif);font-size:14px;font-weight:600;margin:0 0 10px;letter-spacing:.02em}
+    .admin-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+    .admin-row .mail{flex:1;font-size:14px;word-break:break-all}
+    .admin-row .mail .hint{margin-left:6px}
+    .admin-row select{width:130px}
     .editor-title{font-family:var(--serif);font-size:16px;font-weight:600;margin:0 0 12px;letter-spacing:.02em}
     .checks{background:var(--paper-soft);border:1px solid var(--line);border-radius:8px;padding:10px;margin:16px 0}
     .checks label{display:block;font-size:13px;margin-bottom:4px;cursor:pointer}
@@ -124,6 +128,7 @@
       <button class="tab active" data-view="articles">記事</button>
       <button class="tab" data-view="courses">講座</button>
       <button class="tab" data-view="settings">サイト設定</button>
+      <button class="tab" data-view="admins" id="tabAdmins" hidden>管理者設定</button>
     </nav>
     <span class="who" id="who">確認中…</span>
   </div>
@@ -306,6 +311,28 @@
     </main>
   </div>
 
+  <!-- ===== 管理者設定（オーナーのみ） ===== -->
+  <div id="view-admins" class="wrap single" style="display:none">
+    <main class="card">
+      <div id="adminsMsg" class="msg"></div>
+      <div class="sec-title" style="margin-top:0">管理者設定</div>
+      <p class="hint" style="margin:0 0 14px">管理画面に入れるGoogleアカウントの一覧です。オーナーだけが操作できます。</p>
+      <div id="adminsList"></div>
+      <div class="sec-title">管理者を追加</div>
+      <div class="grid2">
+        <label class="field"><span>メールアドレス</span><input id="newAdminEmail" placeholder="example@gmail.com"></label>
+        <label class="field"><span>権限</span>
+          <select id="newAdminRole">
+            <option value="staff">スタッフ（記事・講座・サイト設定）</option>
+            <option value="owner">オーナー（管理者設定も操作可）</option>
+          </select></label>
+      </div>
+      <div class="actions">
+        <button class="btn brown" id="adminAddBtn">追加</button>
+      </div>
+    </main>
+  </div>
+
   <!-- ===== プレビュー ===== -->
   <div class="pv-overlay" id="pvOverlay">
     <div class="pv-sheet">
@@ -325,6 +352,8 @@
     var adminCourses = null;    // 講座タブ用（全カラム）
     var editingCourseId = "";
     var settingsRows = null;    // サイト設定タブ用
+    var adminUsers = null;      // 管理者設定タブ用
+    var myEmail = "";           // ログイン中のメール（自分の行は編集不可にする）
 
     function $(id){ return document.getElementById(id); }
     function val(id){ return $(id).value; }
@@ -365,11 +394,12 @@
       document.querySelectorAll(".tab").forEach(function(t){
         t.classList.toggle("active", t.dataset.view === view);
       });
-      ["articles","courses","settings"].forEach(function(v){
+      ["articles","courses","settings","admins"].forEach(function(v){
         $("view-"+v).style.display = (v === view) ? "grid" : "none";
       });
       if(view === "courses" && adminCourses === null) loadCoursesTab();
       if(view === "settings" && settingsRows === null) loadSettingsTab();
+      if(view === "admins" && adminUsers === null) loadAdminsTab();
     }
 
     /* =============== 記事：一覧・絞り込み =============== */
@@ -734,6 +764,67 @@
     };
     var SETTING_MULTILINE = { top_copy:1, site_description:1, contact_instagram_note:1 };
 
+    /* =============== 管理者設定タブ（オーナーのみ） =============== */
+    function renderAdmins(){
+      var box = $("adminsList");
+      if(!adminUsers || !adminUsers.length){
+        box.innerHTML = '<p class="hint">管理者が登録されていません。</p>';
+        return;
+      }
+      box.innerHTML = "";
+      adminUsers.forEach(function(u){
+        var row = document.createElement("div");
+        row.className = "admin-row";
+        var isMe = String(u.email).toLowerCase() === String(myEmail).toLowerCase();
+        row.innerHTML =
+          '<span class="mail">'+escapeHtml(u.email)+(isMe ? '<span class="hint">（自分）</span>' : "")+'</span>'+
+          '<select '+(isMe ? "disabled" : "")+'>'+
+            '<option value="staff"'+(u.role==="staff"?" selected":"")+'>スタッフ</option>'+
+            '<option value="owner"'+(u.role==="owner"?" selected":"")+'>オーナー</option>'+
+          '</select>'+
+          (isMe ? "" : '<button class="btn" type="button">削除</button>');
+        var sel = row.querySelector("select");
+        sel.addEventListener("change", function(){
+          gasRun("saveAdminUser", { email: u.email, role: sel.value }).then(function(list){
+            adminUsers = list; renderAdmins();
+            showMsgIn("adminsMsg", u.email + " の権限を変更しました。", "ok");
+          }).catch(function(e){ showMsgIn("adminsMsg", e.message, "err"); renderAdmins(); });
+        });
+        var del = row.querySelector("button");
+        if(del) del.addEventListener("click", function(){
+          if(!confirm(u.email + " を管理者から削除します。よろしいですか？")) return;
+          gasRun("deleteAdminUser", u.email).then(function(list){
+            adminUsers = list; renderAdmins();
+            showMsgIn("adminsMsg", "削除しました。", "ok");
+          }).catch(function(e){ showMsgIn("adminsMsg", e.message, "err"); });
+        });
+        box.appendChild(row);
+      });
+    }
+
+    function loadAdminsTab(){
+      $("adminsList").innerHTML = '<p class="hint">読み込み中…</p>';
+      gasRun("getAdminUsersAdmin").then(function(list){
+        adminUsers = list || [];
+        renderAdmins();
+      }).catch(function(e){ showMsgIn("adminsMsg", e.message, "err"); });
+    }
+
+    function addAdminUser(){
+      var email = val("newAdminEmail").trim();
+      if(!email){ showMsgIn("adminsMsg", "メールアドレスを入力してください。", "err"); return; }
+      $("adminAddBtn").disabled = true;
+      gasRun("saveAdminUser", { email: email, role: val("newAdminRole") }).then(function(list){
+        adminUsers = list; renderAdmins();
+        setVal("newAdminEmail", "");
+        $("adminAddBtn").disabled = false;
+        showMsgIn("adminsMsg", email + " を追加しました。", "ok");
+      }).catch(function(e){
+        $("adminAddBtn").disabled = false;
+        showMsgIn("adminsMsg", e.message, "err");
+      });
+    }
+
     function loadSettingsTab(){
       $("settingsFields").innerHTML = '<p class="hint">読み込み中…</p>';
       gasRun("getSettingsAdmin").then(function(rows){
@@ -799,6 +890,8 @@
         $("tabs").style.display = "flex";
         $("view-articles").style.display = "grid";
         $("who").textContent = d.email + (MOCK ? "（モック）" : "");
+        myEmail = d.email || "";
+        if(d.role === "owner") $("tabAdmins").hidden = false;
         courses = d.courses || [];
         articles = d.articles || [];
         fillCourses();
@@ -827,6 +920,7 @@
       $("dupBtn").addEventListener("click", duplicateArticle);
       $("unpublishBtn").addEventListener("click", unpublish);
       $("deleteBtn").addEventListener("click", removeArticle);
+      $("adminAddBtn").addEventListener("click", addAdminUser);
       $("pvClose").addEventListener("click", function(){ $("pvOverlay").classList.remove("open"); });
       $("pvOverlay").addEventListener("click", function(e){ if(e.target === $("pvOverlay")) $("pvOverlay").classList.remove("open"); });
       // 絞り込み
@@ -902,6 +996,10 @@
             { key:"contact_hours", value:"平日 9:00から17:00" },
             { key:"contact_instagram_note", value:"日々の活動はInstagramでもお知らせします。" }
           ],
+          adminUsers: [
+            { email:"mock@example.com", role:"owner" },
+            { email:"staff@example.com", role:"staff" }
+          ],
           seq: 3
         };
       }
@@ -913,6 +1011,7 @@
         case "getAdminData":
           return delay({
             email: "mock@example.com",
+            role: "owner",
             courses: db.courses.map(function(c){ return { course_id:c.course_id, course_name:c.course_name,
               category:c.category, accent_color:c.accent_color, accent_soft:c.accent_soft, accent_ink:c.accent_ink }; }),
             articles: db.articles.map(function(a){ return { article_id:a.article_id, post_type:a.post_type,
@@ -955,6 +1054,24 @@
           if(!found){ found = { course_id: cp.course_id }; db.courses.push(found); }
           Object.keys(cp).forEach(function(k){ found[k] = String(cp[k]); });
           return delay({ ok:true, course_id:cp.course_id });
+        }
+        case "getAdminUsersAdmin":
+          return delay(db.adminUsers.map(function(u){ return Object.assign({}, u); }));
+        case "saveAdminUser": {
+          var ap = args[0] || {};
+          var aEmail = String(ap.email||"").trim().toLowerCase();
+          var aRole = ap.role === "owner" ? "owner" : "staff";
+          if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(aEmail)) return Promise.reject(new Error("メールアドレスの形式が正しくありません。"));
+          if(aEmail === "mock@example.com" && aRole !== "owner") return Promise.reject(new Error("自分自身の権限は変更できません。"));
+          var aFound = db.adminUsers.filter(function(u){ return u.email.toLowerCase() === aEmail; })[0];
+          if(aFound){ aFound.role = aRole; } else { db.adminUsers.push({ email:aEmail, role:aRole }); }
+          return delay(db.adminUsers.map(function(u){ return Object.assign({}, u); }));
+        }
+        case "deleteAdminUser": {
+          var dEmail = String(args[0]||"").trim().toLowerCase();
+          if(dEmail === "mock@example.com") return Promise.reject(new Error("自分自身は削除できません。"));
+          db.adminUsers = db.adminUsers.filter(function(u){ return u.email.toLowerCase() !== dEmail; });
+          return delay(db.adminUsers.map(function(u){ return Object.assign({}, u); }));
         }
         case "getSettingsAdmin":
           return delay(db.settings.map(function(s){ return Object.assign({}, s); }));
